@@ -55,3 +55,23 @@ redditAPI.createSubreddit({name:'AboutTime', description:'Tell me what they do a
     console.log('createSubreddit [SUCCESS]:',subreddit);
   }
 });
+
+// Get all subreddits
+redditAPI.getAllSubreddits(function(err, subreddits) {
+  if (err) {
+    console.log('getAllSubreddits [ERROR]:',err);
+  }
+  else {
+    console.log('getAllSubreddits [SUCCESS]:',subreddits);
+  }
+});
+
+// Create comment
+redditAPI.createComment({commentText:'Hello comment!', userId:1, postId:1, parentId:1}, function(err, comment) {
+  if (err) {
+    console.log(err);
+  }
+  else {
+    console.log(comment)
+  }
+});
