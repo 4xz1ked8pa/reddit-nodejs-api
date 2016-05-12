@@ -199,9 +199,17 @@ module.exports = function RedditAPI(conn) {
     }
     getCommentsForPost: function(postId, callback) {
       conn.query(
-        `SELECT * comments c1
+        `SELECT *
+        FROM comments c1
         LEFT JOIN comments c2 ON c1.id = c2.parentId
-        JOIN users u1 ON u1.id = c1.userId`
+        LEFT JOIN comments c3 ON c2.id = c3.parentId
+        JOIN users u1 ON c1.userId = u1.id
+        JOIN users u2 ON c2.userId = u2.id
+        JOIN users u3 ON c3.userId = u3.id
+        WHERE c1.postId = ? AND c1.parentId IS NULL`, [postId],
+        function(err, comments) {
+
+        }
       );
     }
   }
