@@ -157,7 +157,7 @@ module.exports = function RedditAPI(conn) {
           }
           else {
             conn.query(`SELECT * FROM subreddits WHERE name = ? AND description = ?`,[subreddit.name,subreddit.description],function(err,subreddit) {
-              console.log(subreddit);
+              callback(subreddit);
             });
           }
       });
