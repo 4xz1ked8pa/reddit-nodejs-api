@@ -67,11 +67,11 @@ redditAPI.getAllSubreddits(function(err, subreddits) {
 });
 
 // Create comment
-redditAPI.createComment({commentText:'Hello comment!', userId:1, postId:1, parentId:1}, function(err, comment) {
+redditAPI.createComment({commentText:'Hello comment, again!', userId:1, postId:1, parentId:null}, function(err, comment) {
   if (err) {
-    console.log(err);
+    console.log('createComment [ERROR]:',err);
   }
   else {
-    console.log(comment)
+    console.log('createComment [SUCCESS]:',comment)
   }
 });

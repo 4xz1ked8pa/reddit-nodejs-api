@@ -77,7 +77,16 @@ module.exports = function RedditAPI(conn) {
                   callback(err);
                 }
                 else {
-                  callback(null, result[0]);
+                  conn.query(
+                    `SELECT * FROM posts WHERE id = ?`,[result.id], function(err, post) {
+                      if (err) {
+                        callback(err);
+                      }
+                      else {
+                        callback(null, post);
+                      }
+                    }
+                  );
                 }
               }
             );
@@ -150,7 +159,7 @@ module.exports = function RedditAPI(conn) {
     createSubreddit: function(sub, callback) {
       conn.query(`
         INSERT INTO subreddits (name, description)
-        VALUES (? ?)
+        VALUES (?,?)
       `,[sub.name, sub.description], function(err, subreddit) {
           if (err) {
             callback(err);
@@ -178,7 +187,7 @@ module.exports = function RedditAPI(conn) {
     createComment: function(comment, callback) {
       conn.query(`
         INSERT INTO comments (commentText, userId, postId, parentId)
-        VALUES (? ? ? ?)
+        VALUES (?,?,?,?)
       `,[comment.commentText, comment.userId, comment.postId, comment.parentId], function(err, comment) {
         if (err) {
           callback(err);
@@ -187,12 +196,12 @@ module.exports = function RedditAPI(conn) {
           conn.query(`
             SELECT id AS commentId, commentText, userId, postId, parentId, createdAt, updatedAt
             WHERE commentId = ?
-          `[comment.id], function(err, comment) {
+          `[comment.commentId], function(err, comment) {
               if (err) {
                 callback(err);
               }
               else {
-                callback(null, comment[0]);
+                callback(null, comment);
               }
           });
         }
