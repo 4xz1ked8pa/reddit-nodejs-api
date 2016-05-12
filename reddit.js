@@ -1,5 +1,4 @@
 var bcrypt = require('bcrypt');
-var library = require('./libary.js');
 var HASH_ROUNDS = 10;
 
 module.exports = function RedditAPI(conn) {
@@ -13,7 +12,7 @@ module.exports = function RedditAPI(conn) {
         }
         else {
           conn.query(
-            'INSERT INTO `users` (`username`,`password`, `createdAt`) VALUES (?, ?, ?)', [user.username, hashedPassword, null],
+            'INSERT INTO `users` (`username`,`password`) VALUES (?, ?)', [user.username, hashedPassword],
             function(err, result) {
               if (err) {
                 /*
@@ -61,7 +60,7 @@ module.exports = function RedditAPI(conn) {
     },
     createPost: function(post, callback) {
       conn.query(
-        'INSERT INTO `posts` (`userId`, `title`, `url`, `createdAt`, `subredditId`) VALUES (?, ?, ?, ?, ?)', [post.userId, post.title, post.url, null, post.subredditId],
+        'INSERT INTO `posts` (`userId`, `title`, `url`, `subredditId`) VALUES (?, ?, ?, ?)', [post.userId, post.title, post.url, post.subredditId],
         function(err, result) {
           if (err) {
             callback(err);
@@ -96,10 +95,10 @@ module.exports = function RedditAPI(conn) {
       var offset = (options.page || 0) * limit;
 
       conn.query(`
-        SELECT \`id\`,\`title\`,\`url\`,\`userId\`, \`createdAt\`, \`updatedAt\`, \`subredditId\`
-        FROM \`posts\`
-        JOIN subreddits ON subreddits.id = posts.subredditId
-        ORDER BY \`createdAt\` DESC
+        SELECT posts.id, posts.title, posts.url,posts.userId, posts.createdAt, posts.updatedAt, posts.subredditId, subreddits.name
+        FROM posts
+        LEFT JOIN subreddits ON subreddits.id = posts.subredditId
+        ORDER BY createdAt DESC
         LIMIT ? OFFSET ?
         `, [limit, offset],
         function(err, results) {
@@ -119,7 +118,7 @@ module.exports = function RedditAPI(conn) {
         WHERE userId = ?
         LIMIT ?
         OFFSET ?
-      `, [userId, limit, offset], function(err, posts) {
+      `, [userId, options.limit, options.offset], function(err, posts) {
         if (err) {
           callback(err);
         }
@@ -133,9 +132,9 @@ module.exports = function RedditAPI(conn) {
     },
     getSinglePost: function(postId, callback) {
       conn.query(`
-        SELECT id AS postId, title, url, userId, createdAt, updatedAt
+        SELECT id, title, url, userId, createdAt, updatedAt
         FROM posts
-        WHERE postId = ?
+        WHERE id = ?
       `, [postId], function(err, post) {
         if (err) {
           callback(err);
@@ -150,9 +149,9 @@ module.exports = function RedditAPI(conn) {
     },
     createSubreddit: function(sub, callback) {
       conn.query(`
-        INSERT INTO subreddits (name, description, createdAt)
-        VALUES (? ? ?)
-      `, [sub.name, sub.description,null], function(err, subreddit) {
+        INSERT INTO subreddits (name, description)
+        VALUES (? ?)
+      `, [sub.name, sub.description], function(err, subreddit) {
           if (err) {
             callback(err);
           }
@@ -173,12 +172,12 @@ module.exports = function RedditAPI(conn) {
             callback(null,subreddits);
           }
         });
-    }
+    },
     createComment: function(comment, callback) {
       conn.query(`
-        INSERT INTO comments (commentText, userId, postId, parentId, createdAt)
-        VALUES (? ? ? ? ?)
-      `,[comment.commentText, comment.userId, comment.postId, comment.parentId, null], function(err, comment) {
+        INSERT INTO comments (commentText, userId, postId, parentId)
+        VALUES (? ? ? ?)
+      `,[comment.commentText, comment.userId, comment.postId, comment.parentId], function(err, comment) {
         if (err) {
           callback(err);
         }
@@ -191,17 +190,34 @@ module.exports = function RedditAPI(conn) {
                 callback(err);
               }
               else {
-                callback(null, comment[0];
+                callback(null, comment[0]);
               }
           });
         }
       });
-    }
+    },
     getCommentsForPost: function(postId, callback) {
       conn.query(
-        `SELECT * comments c1
+        `SELECT * FROM comments c1
         LEFT JOIN comments c2 ON c1.id = c2.parentId
-        JOIN users u1 ON u1.id = c1.userId`
+        LEFT JOIN comments c3 ON c2.id = c3.parentId
+        JOIN users u1 ON u1.id = c1.userId
+        JOIN users u2 ON u2.id = c2.userId
+        JOIN users u2 ON u3.id = c3.userId
+        WHERE c1.postId = ? AND c1.parentId IS NULL`,[postId], function(err, comments) {
+          if (err) {
+            callback(err);
+          }
+          else if (!comments[0]) {
+            callback(new Error('No comments were found.'));
+          }
+          else {
+            var listOfComments = [];
+            comments.forEach(function(comment) {
+
+            });
+          }
+        }
       );
     }
   }

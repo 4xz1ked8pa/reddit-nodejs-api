@@ -4,7 +4,7 @@ CREATE TABLE `users` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `username` VARCHAR(50) NOT NULL,
   `password` VARCHAR(60) NOT NULL, -- why 60??? ask me :)
-  `createdAt` TIMESTAMP NOT NULL DEFAULT 0,
+  `createdAt` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updatedAt` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
@@ -17,11 +17,9 @@ CREATE TABLE `posts` (
   `title` varchar(300) DEFAULT NULL,
   `url` varchar(2000) DEFAULT NULL,
   `userId` int(11) DEFAULT NULL,
-  `createdAt` TIMESTAMP NOT NULL DEFAULT 0,
+  `createdAt` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updatedAt` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  JOIN users ON users.id = posts.userId,
   PRIMARY KEY (`id`),
-  KEY `userId` (`userId`),
   CONSTRAINT `posts_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -30,12 +28,12 @@ CREATE TABLE subreddits (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(30) UNIQUE,
   description VARCHAR(200),
-  createdAt TIMESTAMP NOT NULL DEFAULT 0,
+  createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- This adds a subredditId column to the posts table.
-ALTER TABLE posts ADD subredditId INT, ADD FOREIGN KEY subredditId REFERENCES subreddits(id);
+ALTER TABLE posts ADD subredditId INT, ADD FOREIGN KEY (subredditId) REFERENCES subreddits(id);
 
 -- This creates the comments table (id, text, createdAt, updatedAt).
 CREATE TABLE comments (
@@ -43,10 +41,10 @@ CREATE TABLE comments (
   commentText TEXT(10000),
   userId INT,
   postId INT,
-  parentId INT DEFAULT NULL
-  createdAt TIMESTAMP NOT NULL DEFAULT 0,
+  parentId INT DEFAULT NULL,
+  createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY userId REFERENCES users(id),
-  FOREIGN KEY postId REFERENCES posts(id),
-  FOREIGN KEY parentId REFERENCES comments(id)
+  FOREIGN KEY (userId) REFERENCES users(id),
+  FOREIGN KEY (postId) REFERENCES posts(id),
+  FOREIGN KEY (parentId) REFERENCES comments(id)
 );
