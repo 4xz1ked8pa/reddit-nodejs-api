@@ -151,12 +151,14 @@ module.exports = function RedditAPI(conn) {
       conn.query(`
         INSERT INTO subreddits (name, description)
         VALUES (? ?)
-      `, [sub.name, sub.description], function(err, subreddit) {
+      `,[sub.name, sub.description], function(err, subreddit) {
           if (err) {
             callback(err);
           }
           else {
-            callback(null,subreddit);
+            conn.query(`SELECT * FROM subreddits WHERE name = ? AND description = ?`,[subreddit.name,subreddit.description],function(err,subreddit) {
+              console.log(subreddit);
+            });
           }
       });
     },
