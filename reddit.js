@@ -195,8 +195,9 @@ module.exports = function RedditAPI(conn) {
         else {
           conn.query(`
             SELECT id AS commentId, commentText, userId, postId, parentId, createdAt, updatedAt
-            WHERE commentId = ?
-          `[comment.commentId], function(err, comment) {
+            FROM comments
+            WHERE id = ?
+          `, [comment.insertId], function(err, comment) {
               if (err) {
                 callback(err);
               }
